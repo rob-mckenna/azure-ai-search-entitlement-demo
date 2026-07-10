@@ -1,0 +1,26 @@
+# Python API dependencies
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.1
+httpx>=0.27.0
+
+# Azure SDKs
+azure-search-documents>=11.6.0
+azure-identity>=1.17.0
+azure-storage-blob>=12.20.0
+openai>=1.30.0
+
+# PDF generation (synthetic sample documents)
+reportlab>=4.2.0
+
+# PDF text extraction
+pypdf>=4.2.0
+
+# Testing
+pytest>=8.2.0
+pytest-asyncio>=0.23.0
+
+# Linting (optional)
+flake8>=7.0.0

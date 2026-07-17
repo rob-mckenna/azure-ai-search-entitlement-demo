@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: azure-ai-search-entitlement-filtering-demo
+
+metadata:
+  template: azure-ai-search-entitlement-filtering-demo@0.0.1
+
+services:
+  api:
+    project: ./src/api
+    language: py
+    host: appservice
+
+hooks:
+  postprovision:
+    shell: sh
+    run: |
+      echo "Running post-provision ingestion..."
+      pip install -r requirements.txt --quiet
+      python src/ingestion/generate_sample_pdfs.py
+      python src/ingestion/ingest_documents.py
+    continueOnError: true
+    interactive: false

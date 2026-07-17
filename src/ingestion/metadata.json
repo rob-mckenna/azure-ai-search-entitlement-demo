@@ -1,0 +1,68 @@
+[
+  {
+    "documentId": "partner-alpha-client-north-overview",
+    "title": "Partner Alpha Client North Overview",
+    "sourceFile": "partner-alpha-client-north-overview.pdf",
+    "partnerId": "PartnerAlpha",
+    "clientId": "ClientNorth",
+    "productLine": "ProductLineA",
+    "region": "RegionOne",
+    "classification": "RestrictedDemo",
+    "allowedEntitlements": ["PartnerAlpha", "ClientNorth", "ProductLineA", "RegionOne"]
+  },
+  {
+    "documentId": "partner-alpha-client-south-product-line-a-summary",
+    "title": "Partner Alpha Client South Product Line A Summary",
+    "sourceFile": "partner-alpha-client-south-product-line-a-summary.pdf",
+    "partnerId": "PartnerAlpha",
+    "clientId": "ClientSouth",
+    "productLine": "ProductLineA",
+    "region": "RegionOne",
+    "classification": "RestrictedDemo",
+    "allowedEntitlements": ["PartnerAlpha", "ClientSouth", "ProductLineA", "RegionOne"]
+  },
+  {
+    "documentId": "partner-beta-client-east-operational-review",
+    "title": "Partner Beta Client East Operational Review",
+    "sourceFile": "partner-beta-client-east-operational-review.pdf",
+    "partnerId": "PartnerBeta",
+    "clientId": "ClientEast",
+    "productLine": "ProductLineB",
+    "region": "RegionTwo",
+    "classification": "RestrictedDemo",
+    "allowedEntitlements": ["PartnerBeta", "ClientEast", "ProductLineB", "RegionTwo"]
+  },
+  {
+    "documentId": "shared-global-reference-guide",
+    "title": "Shared Global Reference Guide",
+    "sourceFile": "shared-global-reference-guide.pdf",
+    "partnerId": "Global",
+    "clientId": "Global",
+    "productLine": "Global",
+    "region": "Global",
+    "classification": "PublicDemoReference",
+    "allowedEntitlements": ["Global", "PublicDemoReference"]
+  },
+  {
+    "documentId": "restricted-client-north-financial-summary",
+    "title": "Restricted Client North Financial Summary",
+    "sourceFile": "restricted-client-north-financial-summary.pdf",
+    "partnerId": "PartnerAlpha",
+    "clientId": "ClientNorth",
+    "productLine": "ProductLineA",
+    "region": "RegionOne",
+    "classification": "RestrictedDemo",
+    "allowedEntitlements": ["PartnerAlpha", "ClientNorth", "ProductLineA", "RegionOne"]
+  },
+  {
+    "documentId": "restricted-client-east-implementation-notes",
+    "title": "Restricted Client East Implementation Notes",
+    "sourceFile": "restricted-client-east-implementation-notes.pdf",
+    "partnerId": "PartnerBeta",
+    "clientId": "ClientEast",
+    "productLine": "ProductLineB",
+    "region": "RegionTwo",
+    "classification": "RestrictedDemo",
+    "allowedEntitlements": ["PartnerBeta", "ClientEast", "ProductLineB", "RegionTwo"]
+  }
+]

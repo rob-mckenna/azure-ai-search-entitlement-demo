@@ -63,7 +63,7 @@ Example output:
 Key behaviors:
 - Deny-by-default: unknown users get `id eq 'DENIED_NO_ENTITLEMENTS_FOUND'`
 - Never returns an empty or null filter
-- Logs the generated filter for demo transparency
+- API responses include the generated filter for demo transparency
 
 ### 4. Retrieval API (`src/api/`)
 

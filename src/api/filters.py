@@ -61,8 +61,6 @@ def build_entitlement_filter(entitlements: Optional[EntitlementProfile]) -> str:
         logger.warning("No entitlements found for user — applying deny-all filter.")
         return DENY_ALL_FILTER
 
-    user_id = entitlements.userId
-
     # Build the restricted document filter clause
     # This is only meaningful if the user has actual client/product/region assignments.
     restricted_filter = _build_restricted_filter(entitlements)
@@ -81,9 +79,7 @@ def build_entitlement_filter(entitlements: Optional[EntitlementProfile]) -> str:
     if not filter_clauses:
         # User has no allowed clients, products, or regions AND cannot read global references
         # This should not normally happen but is handled defensively
-        logger.warning(
-            f"User '{user_id}' has no applicable entitlements — applying deny-all filter."
-        )
+        logger.warning("User has no applicable entitlements — applying deny-all filter.")
         return DENY_ALL_FILTER
 
     if len(filter_clauses) == 1:
@@ -92,7 +88,11 @@ def build_entitlement_filter(entitlements: Optional[EntitlementProfile]) -> str:
         # Wrap each clause in parentheses before joining with OR
         final_filter = " or ".join(f"({clause})" for clause in filter_clauses)
 
-    logger.info(f"Generated entitlement filter for user '{user_id}':\n  {final_filter}")
+    logger.info(
+        "Generated entitlement filter (restricted=%s, hasGlobalReferenceClause=%s).",
+        bool(restricted_filter),
+        bool(global_filter)
+    )
     return final_filter
 
 

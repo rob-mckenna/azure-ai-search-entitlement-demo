@@ -125,6 +125,34 @@ class TestCrossPartnerIsolation:
         assert "ClientNorth" not in entitlement_filter
 
 
+class TestCompareWorkflowBaselines:
+    """Lightweight regression coverage for the manual compare workflow."""
+
+    def test_same_query_has_distinct_scopes_for_alpha_north_and_beta_east(self):
+        """The same query should produce clearly different entitlement scopes
+        for Alpha North vs Beta East, while still allowing PublicDemoReference."""
+        alpha = get_entitlements("user.alpha.north@example.com")
+        beta = get_entitlements("user.beta.east@example.com")
+
+        assert alpha is not None
+        assert beta is not None
+
+        alpha_filter = build_entitlement_filter(alpha)
+        beta_filter = build_entitlement_filter(beta)
+
+        assert alpha_filter != beta_filter
+
+        assert "PartnerAlpha" in alpha_filter
+        assert "ClientNorth" in alpha_filter
+        assert "RegionOne" in alpha_filter
+        assert PUBLIC_REFERENCE_CLASSIFICATION in alpha_filter
+
+        assert "PartnerBeta" in beta_filter
+        assert "ClientEast" in beta_filter
+        assert "RegionTwo" in beta_filter
+        assert PUBLIC_REFERENCE_CLASSIFICATION in beta_filter
+
+
 class TestPublicReferenceAccessRules:
     """Test the PublicDemoReference classification access rules."""
 

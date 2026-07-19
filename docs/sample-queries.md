@@ -7,6 +7,39 @@ All users, documents, and data are **entirely synthetic**. No real business data
 
 ---
 
+## Compare Workflow Checklist
+
+Use this manual checklist to validate the compare workflow:
+
+1. Start the API and frontend.
+2. Open the app in two browser tabs, or use the API directly.
+3. Run the same query for two different users.
+4. Confirm the filters, result counts, and document titles differ where expected.
+5. Confirm `PublicDemoReference` content remains available to known demo users.
+6. Confirm unknown users still receive the deny-by-default filter and no results.
+
+**Open UI gap:** the current frontend has no dedicated side-by-side compare pane.
+Comparison is manual today: use the user selector, query history, and/or separate
+tabs.
+
+**Regressions to guard with tests:**
+- Search calls must always include the entitlement filter.
+- Unknown users must stay deny-by-default.
+- Switching users must not reuse a previous user's results or filter.
+- PublicDemoReference access must remain explicitly gated.
+
+```bash
+curl -X POST http://localhost:8000/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"user.alpha.north@example.com","query":"Summarize Product Line A implementation notes","searchMode":"hybrid"}'
+
+curl -X POST http://localhost:8000/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"user.beta.east@example.com","query":"Summarize Product Line A implementation notes","searchMode":"hybrid"}'
+```
+
+---
+
 ## Prerequisites
 
 1. Deploy the infrastructure: `azd up`
@@ -264,3 +297,5 @@ When running this demo, highlight these observations:
 5. **Global reference access** — Query 5 shows that the Global Reference Reader gets access only to PublicDemoReference documents.
 
 6. **LLM protection** — If Azure OpenAI is configured, demonstrate that the LLM answer only references documents the user is authorized to see.
+
+7. **Compare workflow gap** — There is no dedicated compare UI yet, so use the checklist above and compare query history / response payloads manually.

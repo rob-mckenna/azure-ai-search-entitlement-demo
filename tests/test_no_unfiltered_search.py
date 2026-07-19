@@ -19,6 +19,7 @@ from unittest.mock import patch, MagicMock, call
 import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src" / "api"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src" / "ingestion"))
 
 from filters import build_entitlement_filter, DENY_ALL_FILTER
 from entitlements import get_entitlements

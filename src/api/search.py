@@ -15,12 +15,17 @@ Supported search modes:
 
 import os
 import logging
+import sys
+from pathlib import Path
 from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.models import VectorizedQuery
+
+# Allow importing the index schema consistently from src/ingestion/.
+sys.path.insert(0, str(Path(__file__).parent.parent / "ingestion"))
 
 from models import SearchResult, ChunkCitation
 from index_schema import INDEX_NAME

@@ -243,6 +243,20 @@ curl -X POST http://localhost:8000/api/search \
   -d '{"userId": "unknown@example.com", "query": "all documents", "searchMode": "keyword"}'
 ```
 
+## Compare Workflow
+
+The app has no dedicated compare pane. Compare mode is manual: run the same
+query for two users and compare the returned `filter`, result titles, and
+`query-history` entries.
+
+Smallest useful check:
+1. Run `Summarize Product Line A implementation notes` as Alpha North.
+2. Run the same query as Beta East.
+3. Confirm the filters and result sets differ.
+4. Confirm no PartnerAlpha results appear in the Beta run and no PartnerBeta results appear in the Alpha run.
+
+See [docs/sample-queries.md](docs/sample-queries.md) for the full checklist.
+
 ---
 
 ## Running Tests

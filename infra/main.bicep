@@ -35,7 +35,7 @@ module identity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.1
 }
 
 // Azure AI Search
-module searchService 'br/public:avm/res/search/search-service:0.5.1' = {
+module searchService 'br/public:avm/res/search/search-service:0.12.2' = {
   name: 'search'
   scope: rg
   params: {
@@ -45,7 +45,7 @@ module searchService 'br/public:avm/res/search/search-service:0.5.1' = {
     sku: 'standard'
     replicaCount: 1
     partitionCount: 1
-    hostingMode: 'default'
+    hostingMode: 'Default'
     publicNetworkAccess: 'Enabled'
     authOptions: {
       aadOrApiKey: {
@@ -115,23 +115,21 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.9.1' = {
 }
 
 // App Service Plan
-module appServicePlan 'br/public:avm/res/web/serverfarm:0.2.2' = {
+module appServicePlan 'br/public:avm/res/web/serverfarm:0.7.0' = {
   name: 'appServicePlan'
   scope: rg
   params: {
     name: '${abbrs.webServerFarms}${resourceToken}'
     location: location
     tags: tags
-    sku: {
-      name: 'B1'
-      tier: 'Basic'
-    }
-    reserved: true  // Linux
+    skuName: 'B1'
+    skuCapacity: 1
+    reserved: true
   }
 }
 
 // App Service (Backend API)
-module appService 'br/public:avm/res/web/site:0.5.1' = {
+module appService 'br/public:avm/res/web/site:0.23.1' = {
   name: 'appService'
   scope: rg
   params: {
@@ -144,13 +142,28 @@ module appService 'br/public:avm/res/web/site:0.5.1' = {
       linuxFxVersion: 'PYTHON|3.11'
       appCommandLine: 'uvicorn main:app --host 0.0.0.0 --port 8000'
       alwaysOn: true
-    }
-    appSettingsKeyValuePairs: {
-      AZURE_SEARCH_ENDPOINT: 'https://${searchService.outputs.name}.search.windows.net'
-      AZURE_SEARCH_INDEX: 'entitlement-demo-index'
-      AZURE_CLIENT_ID: identity.outputs.clientId
-      ENABLE_LLM: 'false'
-      SCM_DO_BUILD_DURING_DEPLOYMENT: 'true'
+      appSettings: [
+        {
+          name: 'AZURE_SEARCH_ENDPOINT'
+          value: 'https://${searchService.outputs.name}.search.windows.net'
+        }
+        {
+          name: 'AZURE_SEARCH_INDEX'
+          value: 'entitlement-demo-index'
+        }
+        {
+          name: 'AZURE_CLIENT_ID'
+          value: identity.outputs.clientId
+        }
+        {
+          name: 'ENABLE_LLM'
+          value: 'false'
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true'
+        }
+      ]
     }
     managedIdentities: {
       userAssignedResourceIds: [identity.outputs.resourceId]

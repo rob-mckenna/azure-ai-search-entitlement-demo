@@ -27,11 +27,19 @@ Usage:
 import os
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+
+# Application Insights telemetry
+try:
+    from azure.monitor.opentelemetry import configure_azure_monitor
+    APPINSIGHTS_AVAILABLE = True
+except ImportError:
+    APPINSIGHTS_AVAILABLE = False
 
 # Allow importing from src/api/ and src/ingestion/
 sys.path.insert(0, str(Path(__file__).parent))
@@ -54,6 +62,34 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize Application Insights if instrumentation key is configured
+if APPINSIGHTS_AVAILABLE:
+    instrumentation_key = os.getenv("APPINSIGHTS_INSTRUMENTATION_KEY", "")
+    if instrumentation_key:
+        try:
+            configure_azure_monitor(instrumentation_key=instrumentation_key)
+            logger.info(f"Application Insights configured with key: {instrumentation_key[:8]}...")
+        except Exception as e:
+            logger.warning(f"Failed to configure Application Insights: {e}")
+
+# Telemetry helper
+def track_query_event(user_id: str, query: str, search_mode: str, filter_expr: str, result_count: int, endpoint: str):
+    """Send query telemetry to Application Insights."""
+    try:
+        from opentelemetry import trace
+        from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
+        
+        tracer = trace.get_tracer(__name__)
+        with tracer.start_as_current_span("search_query") as span:
+            span.set_attribute("query", query)
+            span.set_attribute("userId", user_id)
+            span.set_attribute("filter", filter_expr)
+            span.set_attribute("searchMode", search_mode)
+            span.set_attribute("resultCount", result_count)
+            span.set_attribute("endpoint", endpoint)
+    except Exception as e:
+        logger.debug(f"Failed to track query event: {e}")
+
 app = FastAPI(
     title="Azure AI Search Entitlement Filtering Demo",
     description=(
@@ -63,6 +99,9 @@ app = FastAPI(
     ),
     version="1.0.0"
 )
+
+# Query history log for demonstration
+query_log = []
 
 # CORS — allow requests from the React frontend during local development
 app.add_middleware(
@@ -126,6 +165,15 @@ async def search(request: SearchRequest):
     """
     logger.info(f"Search request: user='{request.userId}' query='{request.query}' mode='{request.searchMode}'")
 
+    # Log query to history
+    query_log.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "userId": request.userId,
+        "query": request.query,
+        "searchMode": request.searchMode,
+        "endpoint": "/api/search"
+    })
+
     # Step 1: Look up user entitlements
     entitlements = get_entitlements(request.userId)
     if entitlements is None:
@@ -176,6 +224,16 @@ async def search(request: SearchRequest):
 
     logger.info(f"Search returned {len(results)} results for user '{request.userId}'")
 
+    # Track to Application Insights
+    track_query_event(
+        user_id=request.userId,
+        query=request.query,
+        search_mode=request.searchMode,
+        filter_expr=entitlement_filter,
+        result_count=len(results),
+        endpoint="/api/search"
+    )
+
     return SearchResponse(
         userId=request.userId,
         query=request.query,
@@ -204,6 +262,15 @@ async def chat(request: ChatRequest):
     If Azure OpenAI is not configured, returns retrieval results only.
     """
     logger.info(f"Chat request: user='{request.userId}' query='{request.query}'")
+
+    # Log query to history
+    query_log.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "userId": request.userId,
+        "query": request.query,
+        "searchMode": request.searchMode,
+        "endpoint": "/api/chat"
+    })
 
     # Step 1: Look up entitlements
     entitlements = get_entitlements(request.userId)
@@ -326,7 +393,7 @@ async def chat(request: ChatRequest):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=1000,
+            max_completion_tokens=1000,
             temperature=0.3
         )
         answer = completion.choices[0].message.content
@@ -343,6 +410,16 @@ async def chat(request: ChatRequest):
             message=f"Answer generation failed: {str(e)}. Retrieval results are shown below."
         )
 
+    # Track to Application Insights
+    track_query_event(
+        user_id=request.userId,
+        query=request.query,
+        search_mode=request.searchMode,
+        filter_expr=entitlement_filter,
+        result_count=len(sources),
+        endpoint="/api/chat"
+    )
+
     return ChatResponse(
         userId=request.userId,
         query=request.query,
@@ -352,8 +429,23 @@ async def chat(request: ChatRequest):
     )
 
 
+@app.get("/api/query-history")
+async def get_query_history(limit: int = 20):
+    """
+    Get the recent query history for demonstration purposes.
+
+    Args:
+        limit: Maximum number of recent queries to return (default: 20)
+
+    Returns:
+        List of recent queries with timestamps, user IDs, and search terms.
+    """
+    return {"queries": query_log[-limit:]}
+
+
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("API_HOST", "0.0.0.0")
     port = int(os.getenv("API_PORT", "8000"))
+    print(f"\n📋 Query history available at: http://{host}:{port}/api/query-history\n")
     uvicorn.run("main:app", host=host, port=port, reload=True)

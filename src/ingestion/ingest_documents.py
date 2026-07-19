@@ -65,12 +65,21 @@ def get_search_credential():
     return DefaultAzureCredential()
 
 
-def ensure_index_exists(index_client: SearchIndexClient):
-    """Create the search index if it doesn't already exist."""
+def ensure_index_exists(index_client: SearchIndexClient, recreate: bool = False):
+    """Create the search index if it doesn't already exist.
+
+    Args:
+        recreate: If True, delete and recreate the index even if it already exists.
+                  Use this when the index schema has changed (e.g. vector dimensions).
+    """
     existing = [idx.name for idx in index_client.list_indexes()]
     if INDEX_NAME in existing:
-        logger.info(f"Index '{INDEX_NAME}' already exists.")
-        return
+        if not recreate:
+            logger.info(f"Index '{INDEX_NAME}' already exists.")
+            return
+        logger.info(f"Deleting existing index '{INDEX_NAME}' for recreation...")
+        index_client.delete_index(INDEX_NAME)
+        logger.info(f"Index '{INDEX_NAME}' deleted.")
 
     logger.info(f"Creating index '{INDEX_NAME}'...")
     index = build_index_schema()
@@ -161,7 +170,7 @@ def build_search_documents(
     return search_docs
 
 
-def ingest_all_documents():
+def ingest_all_documents(recreate_index: bool = False):
     """Main ingestion function — processes all documents in metadata.json."""
     endpoint = os.getenv("AZURE_SEARCH_ENDPOINT", "")
     if not endpoint:
@@ -176,8 +185,8 @@ def ingest_all_documents():
         credential=credential
     )
 
-    # Step 1: Ensure the index exists
-    ensure_index_exists(index_client)
+    # Step 1: Ensure the index exists (optionally recreate it)
+    ensure_index_exists(index_client, recreate=recreate_index)
 
     # Step 2: Load document metadata
     if not METADATA_FILE.exists():
@@ -261,4 +270,12 @@ def ingest_all_documents():
 
 
 if __name__ == "__main__":
-    ingest_all_documents()
+    import argparse
+    parser = argparse.ArgumentParser(description="Ingest documents into Azure AI Search.")
+    parser.add_argument(
+        "--recreate-index",
+        action="store_true",
+        help="Delete and recreate the search index before ingesting (use when schema has changed).",
+    )
+    args = parser.parse_args()
+    ingest_all_documents(recreate_index=args.recreate_index)

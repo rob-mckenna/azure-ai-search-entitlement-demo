@@ -28,7 +28,7 @@ from azure.search.documents.indexes.models import (
 )
 
 INDEX_NAME = "entitlement-demo-index"
-VECTOR_DIMENSIONS = 1536  # text-embedding-3-small dimensions
+VECTOR_DIMENSIONS = 3072  # text-embedding-3-large dimensions
 
 
 def build_index_schema() -> SearchIndex:

@@ -1,0 +1,26 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "The Matrix",
+      "assignment_id": "2026-07-16-initial-cast",
+      "used_at": "2026-07-16T18:51:29.849-04:00"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2026-07-16-initial-cast": {
+      "universe": "The Matrix",
+      "agents": {
+        "lead": "Morpheus",
+        "backend": "Trinity",
+        "data-ingestion": "Niobe",
+        "frontend": "Link",
+        "tester": "Tank",
+        "scribe": "Scribe",
+        "ralph": "Ralph",
+        "rai": "Rai",
+        "fact-checker": "Fact Checker"
+      },
+      "created_at": "2026-07-16T18:51:29.849-04:00"
+    }
+  }
+}

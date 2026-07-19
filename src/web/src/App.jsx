@@ -111,6 +111,7 @@ export default function App() {
   const [searchResult, setSearchResult] = useState(null)
   const [chatMode, setChatMode] = useState(false)
   const [error, setError] = useState(null)
+  const [queryHistory, setQueryHistory] = useState([])
 
   // Load demo users on mount
   useEffect(() => {
@@ -139,6 +140,17 @@ export default function App() {
       .then(data => setUserProfile(data))
       .catch(() => setUserProfile(null))
   }, [selectedUserId])
+
+  // Fetch query history periodically for live updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(`${API_BASE}/api/query-history?limit=10`)
+        .then(r => r.json())
+        .then(data => setQueryHistory(data.queries || []))
+        .catch(() => {})
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSearch = async () => {
     if (!query.trim() || !selectedUserId) return
@@ -195,6 +207,65 @@ export default function App() {
           </div>
 
           <EntitlementPanel profile={userProfile} />
+
+          {/* Sample queries panel */}
+          <div className="card">
+            <h2>Try These Sample Queries</h2>
+            {[
+              { user: 'user.alpha.north@example.com', q: 'Summarize Product Line A implementation notes' },
+              { user: 'user.alpha.south@example.com', q: 'What are the operational risks?' },
+              { user: 'user.beta.east@example.com', q: 'Show implementation details for ClientEast' },
+              { user: 'user.alpha.north@example.com', q: 'Summarize ClientEast implementation notes' },
+              { user: 'user.global.reader@example.com', q: 'What reference guidance is available?' },
+            ].map((sample, i) => (
+              <div key={i} style={{ marginBottom: 10 }}>
+                <button
+                  style={{
+                    background: 'none', border: '1px solid #e2e8f0', borderRadius: 6,
+                    padding: '6px 12px', cursor: 'pointer', textAlign: 'left',
+                    width: '100%', fontSize: 12, color: '#4a5568'
+                  }}
+                  onClick={() => {
+                    setSelectedUserId(sample.user)
+                    setQuery(sample.q)
+                  }}
+                >
+                  <span style={{ fontWeight: 700, color: '#1a3a5c' }}>{sample.user.split('@')[0]}</span>
+                  <br />"{sample.q}"
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Query History */}
+          <div className="card">
+            <h2>📋 Recent Queries</h2>
+            {queryHistory.length === 0 ? (
+              <p style={{ fontSize: 12, color: '#718096', marginTop: 8 }}>
+                No queries logged yet. Run a query to see it appear here.
+              </p>
+            ) : (
+              <div style={{ fontSize: 11, maxHeight: 200, overflowY: 'auto' }}>
+                {queryHistory.map((q, i) => (
+                  <div key={i} style={{ 
+                    padding: '6px 8px', 
+                    marginBottom: 4, 
+                    background: '#f7fafc', 
+                    borderRadius: 4,
+                    borderLeft: '3px solid #4299e1'
+                  }}>
+                    <div style={{ fontWeight: 600, color: '#1a3a5c' }}>
+                      {q.userId.split('@')[0]} - {q.endpoint}
+                    </div>
+                    <div style={{ color: '#4a5568', marginTop: 2 }}>"{q.query}"</div>
+                    <div style={{ color: '#a0aec0', fontSize: 10, marginTop: 2 }}>
+                      {new Date(q.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Demo transparency: generated filter */}
           {searchResult && (
@@ -308,36 +379,7 @@ export default function App() {
             </div>
           )}
 
-          {/* Sample queries panel */}
-          {!searchResult && !loading && (
-            <div className="card">
-              <h2>Try These Sample Queries</h2>
-              {[
-                { user: 'user.alpha.north@example.com', q: 'Summarize Product Line A implementation notes' },
-                { user: 'user.alpha.south@example.com', q: 'What are the operational risks?' },
-                { user: 'user.beta.east@example.com', q: 'Show implementation details for ClientEast' },
-                { user: 'user.alpha.north@example.com', q: 'Summarize ClientEast implementation notes' },
-                { user: 'user.global.reader@example.com', q: 'What reference guidance is available?' },
-              ].map((sample, i) => (
-                <div key={i} style={{ marginBottom: 10 }}>
-                  <button
-                    style={{
-                      background: 'none', border: '1px solid #e2e8f0', borderRadius: 6,
-                      padding: '6px 12px', cursor: 'pointer', textAlign: 'left',
-                      width: '100%', fontSize: 12, color: '#4a5568'
-                    }}
-                    onClick={() => {
-                      setSelectedUserId(sample.user)
-                      setQuery(sample.q)
-                    }}
-                  >
-                    <span style={{ fontWeight: 700, color: '#1a3a5c' }}>{sample.user.split('@')[0]}</span>
-                    <br />"{sample.q}"
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+
         </div>
       </div>
     </div>

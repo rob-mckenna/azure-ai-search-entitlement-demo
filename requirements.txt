@@ -11,6 +11,7 @@ azure-search-documents>=11.6.0
 azure-identity>=1.17.0
 azure-storage-blob>=12.20.0
 openai>=1.30.0
+azure-monitor-opentelemetry>=1.3.0
 
 # PDF generation (synthetic sample documents)
 reportlab>=4.2.0

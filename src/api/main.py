@@ -124,12 +124,17 @@ async def search(request: SearchRequest):
 
     The generated filter is included in the response for demo transparency.
     """
-    logger.info(f"Search request: user='{request.userId}' query='{request.query}' mode='{request.searchMode}'")
+    logger.info(
+        "Search request received (mode=%s, topK=%s, queryLength=%s).",
+        request.searchMode,
+        request.topK,
+        len(request.query or "")
+    )
 
     # Step 1: Look up user entitlements
     entitlements = get_entitlements(request.userId)
     if entitlements is None:
-        logger.warning(f"Unknown user '{request.userId}' — deny-by-default.")
+        logger.warning("Unknown user supplied for search request — applying deny-by-default filter.")
 
     # Step 2: Build entitlement filter (DENY_ALL_FILTER if user is unknown)
     entitlement_filter = build_entitlement_filter(entitlements)
@@ -174,7 +179,7 @@ async def search(request: SearchRequest):
             "your entitlement scope, or the index is empty."
         )
 
-    logger.info(f"Search returned {len(results)} results for user '{request.userId}'")
+    logger.info("Search completed with %s results.", len(results))
 
     return SearchResponse(
         userId=request.userId,
@@ -203,12 +208,17 @@ async def chat(request: ChatRequest):
 
     If Azure OpenAI is not configured, returns retrieval results only.
     """
-    logger.info(f"Chat request: user='{request.userId}' query='{request.query}'")
+    logger.info(
+        "Chat request received (mode=%s, topK=%s, queryLength=%s).",
+        request.searchMode,
+        request.topK,
+        len(request.query or "")
+    )
 
     # Step 1: Look up entitlements
     entitlements = get_entitlements(request.userId)
     if entitlements is None:
-        logger.warning(f"Unknown user '{request.userId}' — deny-by-default.")
+        logger.warning("Unknown user supplied for chat request — applying deny-by-default filter.")
 
     # Step 2: Build entitlement filter
     entitlement_filter = build_entitlement_filter(entitlements)

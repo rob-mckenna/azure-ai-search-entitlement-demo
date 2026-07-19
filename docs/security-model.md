@@ -106,6 +106,16 @@ The key use case for this pattern is:
 - The document index has no knowledge of user identity or permissions
 - The application layer bridges authentication (identity) and authorization (entitlements) at query time
 
+### 11. Frontend Messaging Should Reflect Authorization Outcomes Without Leaking Internal Attributes
+
+User-facing messaging should clearly distinguish:
+
+- **No access granted**: deny-by-default was applied (unknown or unresolved user identity).
+- **Limited access with results**: content is visible, but only within authorized scope.
+- **No matches in scope**: user is authorized, but no documents matched the query in that scope.
+
+UI copy should explain enforcement behavior in plain language and avoid exposing raw entitlement attributes (for example, full internal filters or entitlement payloads) unless explicitly needed for demo troubleshooting.
+
 ---
 
 ## Threat Model

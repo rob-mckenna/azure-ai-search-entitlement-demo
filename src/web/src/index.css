@@ -281,6 +281,12 @@ textarea {
   color: #c53030;
 }
 
+.message-box.info {
+  background: #ebf8ff;
+  border-color: #90cdf4;
+  color: #2c5282;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -377,6 +383,13 @@ textarea {
   line-height: 1.7;
   margin-bottom: 16px;
   white-space: pre-wrap;
+}
+
+.filter-details-summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #2e6da4;
+  font-weight: 600;
 }
 
 .compare-mode-toggle {

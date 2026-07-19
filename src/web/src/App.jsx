@@ -259,12 +259,15 @@ export default function App() {
 
       {pane.searchResult && (
         <div className="card">
-          <h2>Generated Filter</h2>
-          <div className="filter-label">OData filter applied to this query:</div>
-          <div className="filter-box">{pane.searchResult.filter}</div>
-          <p style={{ fontSize: 11, color: '#a0aec0', marginTop: 8 }}>
-            This filter is applied to every Azure AI Search query. Unauthorized documents are never returned.
+          <h2>Authorization Enforcement</h2>
+          <p className="hint">
+            Every query is enforced by entitlement scope. Unauthorized documents are never returned.
           </p>
+          <details>
+            <summary className="filter-details-summary">View technical filter details (demo transparency)</summary>
+            <div className="filter-label" style={{ marginTop: 10 }}>OData filter applied to this query:</div>
+            <div className="filter-box">{pane.searchResult.filter}</div>
+          </details>
         </div>
       )}
     </>
@@ -272,6 +275,41 @@ export default function App() {
 
   const renderQueryAndResults = (paneKey, pane, headingPrefix) => {
     const results = pane.searchResult?.results || pane.searchResult?.sources || []
+    const isDenyByDefault = pane.searchResult?.filter === "id eq 'DENIED_NO_ENTITLEMENTS_FOUND'" || Boolean(pane.searchResult?.message?.includes('deny-by-default'))
+    const isNoMatches = pane.searchResult && !isDenyByDefault && results.length === 0
+    const hasLimitedResults = pane.searchResult && results.length > 0
+
+    const statusMessage = (() => {
+      if (!pane.searchResult) return null
+      if (pane.searchResult.message && (
+        pane.searchResult.message.includes('not configured') ||
+        pane.searchResult.message.includes('failed')
+      )) {
+        return {
+          type: 'warning',
+          text: pane.searchResult.message,
+        }
+      }
+      if (isDenyByDefault) {
+        return {
+          type: 'warning',
+          text: 'No access granted for this user. Deny-by-default enforcement returned no documents.',
+        }
+      }
+      if (isNoMatches) {
+        return {
+          type: 'info',
+          text: 'No matches found within this user’s authorized scope for the current query.',
+        }
+      }
+      if (hasLimitedResults) {
+        return {
+          type: 'info',
+          text: 'Results are limited to content this user is authorized to access.',
+        }
+      }
+      return null
+    })()
 
     return (
       <>
@@ -337,9 +375,9 @@ export default function App() {
           <div className="card">
             <h2>Results</h2>
 
-            {pane.searchResult.message && (
-              <div className={`message-box ${results.length === 0 ? 'warning' : ''}`}>
-                {pane.searchResult.message}
+            {statusMessage && (
+              <div className={`message-box ${statusMessage.type}`}>
+                {statusMessage.text}
               </div>
             )}
 
@@ -353,13 +391,13 @@ export default function App() {
 
             {results.length > 0 && !pane.searchResult.answer && (
               <div className="result-count">
-                {results.length} result{results.length !== 1 ? 's' : ''} returned for <strong>{pane.selectedUserId}</strong>
+                {results.length} result{results.length !== 1 ? 's' : ''} returned for <strong>{pane.userProfile?.displayName || 'selected user'}</strong>
               </div>
             )}
 
-            {results.length === 0 && !pane.searchResult.message && (
+            {results.length === 0 && !statusMessage && (
               <div className="empty-state">
-                No results. Either the index is empty or your entitlements do not match any documents.
+                No documents were returned.
               </div>
             )}
 

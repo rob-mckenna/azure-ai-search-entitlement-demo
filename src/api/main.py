@@ -103,11 +103,18 @@ app = FastAPI(
 # Query history log for demonstration
 query_log = []
 
-# CORS — allow requests from the React frontend during local development
+# CORS origins:
+# - default to local frontend hosts
+# - override in production with CORS_ALLOWED_ORIGINS (comma-separated)
+cors_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+cors_allowed_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+if not cors_allowed_origins:
+    cors_allowed_origins = ["http://localhost:5173", "http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
-    allow_credentials=True,
+    allow_origins=cors_allowed_origins,
+    allow_credentials="*" not in cors_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

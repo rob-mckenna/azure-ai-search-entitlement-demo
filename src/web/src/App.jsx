@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-const API_BASE = '' // Uses Vite proxy to http://localhost:8000
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
 
 const SAMPLE_QUERIES = [
   { user: 'user.alpha.north@example.com', q: 'Summarize Product Line A implementation notes' },

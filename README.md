@@ -223,6 +223,26 @@ npm run dev
 # Frontend available at http://localhost:5173
 ```
 
+### 7. Deploy the UI as static assets (Option 1)
+
+Build the React UI into static files and host them separately (for example, Azure Static Web Apps or Azure Storage static website).
+
+```bash
+cd src/web
+cp .env.production.example .env.production
+# Set VITE_API_BASE_URL to your deployed API URL
+npm install
+npm run build
+```
+
+Publish the generated `src/web/dist/` folder to your static host.
+
+For cross-origin browser calls, set backend CORS origins in `.env` (or App Service settings):
+
+```env
+CORS_ALLOWED_ORIGINS=https://your-ui-host.example.com
+```
+
 ---
 
 ## Sample Queries
@@ -313,6 +333,18 @@ azd down
 ```
 
 This removes all Azure resources created by `azd up`.
+
+---
+
+## Cost Planning
+
+See [docs/cost-worksheet.md](docs/cost-worksheet.md) for a fill-in worksheet covering:
+
+- Azure AI Search
+- App Service
+- Storage and logging
+- Optional Azure OpenAI usage
+- Low / expected / high traffic scenarios
 
 ---
 
